@@ -1,37 +1,38 @@
-import { config } from "../data/config"
+import { useMemo } from "react"
 import { memories } from "../data/memories"
-import { timeline } from "../data/timeline"
+import Navbar from "../components/Navbar"
+import Hero from "../components/Hero"
+import MovieRow from "../components/MovieRow"
+import RelationshipCounter from "../components/RelationshipCounter"
+import TimelinePreview from "../components/TimelinePreview"
+import useSelectedProfile from "../hooks/useSelectedProfile"
 
 function Home() {
+  const profile = useSelectedProfile()
+
+  // ponytail: derived state computed directly from the flat array.
+  const featuredMemories = useMemo(() => memories.filter(m => m.featured), [])
+  const recentMemories = useMemo(() => memories.slice(0, 4), []) // just top 4
+  const specialMemories = useMemo(() => memories.filter(m => m.category.includes("Special")), [])
+
   return (
-    <main className="min-h-screen bg-[#080808] text-white p-8">
-      <h1 className="text-4xl font-bold">
-        {config.siteName}
-      </h1>
+    <main className="min-h-screen bg-[#080808] text-white">
+      <Navbar />
+      <Hero />
 
-      <p className="mt-4 text-gray-400">
-        {config.hero.description}
-      </p>
-
-      <div className="mt-8">
-        <h2 className="text-2xl font-semibold">
-          Memories
-        </h2>
-
-        <p className="mt-2 text-gray-400">
-          {memories.length} memories loaded
-        </p>
+      {/* overlap the hero slightly on desktop */}
+      <div id="memories" className="relative z-10 -mt-12 md:-mt-32 pb-12">
+        <MovieRow title="Our Favorite Moments" memories={featuredMemories} />
+        <MovieRow title="Recently Created" memories={recentMemories} />
+        <MovieRow title="Special Memories" memories={specialMemories} />
       </div>
 
-      <div className="mt-8">
-        <h2 className="text-2xl font-semibold">
-          Timeline
-        </h2>
+      <RelationshipCounter />
+      <TimelinePreview />
 
-        <p className="mt-2 text-gray-400">
-          {timeline.length} events loaded
-        </p>
-      </div>
+      <footer className="py-12 text-center text-gray-500 text-sm bg-[#0a0a0a]">
+        <p>Made with ❤️ for {profile?.name || "you"}</p>
+      </footer>
     </main>
   )
 }
