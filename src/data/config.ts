@@ -20,7 +20,7 @@ export const config = {
     ending: "/audio/ending.mp3",
   },
 
-  mainVideo: "/videos/story.mp4",
+  mainVideo: "https://youtu.be/GV3HUDMQ-F8?si=nuFJu569hE1UnDzW",
 
   finalMessage:
     "Our story isn't over yet. There are still so many memories waiting to be created. ❤️",
