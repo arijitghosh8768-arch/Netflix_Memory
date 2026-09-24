@@ -1,16 +1,20 @@
 import { motion } from "framer-motion"
 import { Play } from "lucide-react"
-import { useNavigate } from "react-router"
 import type { Memory } from "../data/memories"
 
-export default function MovieCard({ memory }: { memory: Memory }) {
-  const navigate = useNavigate()
+interface MovieCardProps {
+  memory: Memory
+  onClick: (memory: Memory) => void
+}
 
+export default function MovieCard({ memory, onClick }: MovieCardProps) {
   return (
-    <motion.div
-      onClick={() => navigate("/watch")}
-      className="group relative flex-none w-[200px] md:w-[280px] aspect-video rounded-md overflow-hidden bg-[#141414] cursor-pointer snap-start border border-white/5"
+    <motion.button
+      type="button"
+      onClick={() => onClick(memory)}
+      className="group relative flex-none w-[200px] md:w-[280px] aspect-video rounded-md overflow-hidden bg-[#141414] cursor-pointer snap-start border border-white/5 focus-visible:outline-2 focus-visible:outline-white text-left block"
       whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.98 }}
       transition={{ duration: 0.2 }}
     >
       <img src={memory.image} alt={memory.title} loading="lazy" className="w-full h-full object-cover transition-transform duration-500" />
@@ -24,6 +28,6 @@ export default function MovieCard({ memory }: { memory: Memory }) {
           {memory.duration && <span className="shrink-0">{memory.duration}</span>}
         </div>
       </div>
-    </motion.div>
+    </motion.button>
   )
 }

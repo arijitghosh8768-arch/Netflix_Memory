@@ -6,7 +6,11 @@ import { config } from "../data/config"
 import useVideoPlayer from "../hooks/useVideoPlayer"
 import VideoControls from "./VideoControls"
 
-function VideoPlayer() {
+interface VideoPlayerProps {
+  videoUrl?: string
+}
+
+export default function VideoPlayer({ videoUrl }: VideoPlayerProps) {
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(true)
 
@@ -32,8 +36,8 @@ function VideoPlayer() {
   // Keyboard shortcut support
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Ignore if user is typing in an input (not applicable here, but good practice)
-      if (document.activeElement?.tagName === "INPUT") return
+      // Ignore if user is typing or clicking a standard browser control
+      if (document.activeElement?.tagName === "INPUT" || document.activeElement?.tagName === "BUTTON") return
 
       if (event.code === "Space") {
         event.preventDefault()
@@ -54,10 +58,7 @@ function VideoPlayer() {
     }
 
     window.addEventListener("keydown", handleKeyDown)
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown)
-    }
+    return () => window.removeEventListener("keydown", handleKeyDown)
   }, [currentTime, duration, seek, toggleMute, togglePlay])
 
   return (
@@ -80,7 +81,7 @@ function VideoPlayer() {
 
       <video
         ref={videoRef}
-        src={config.mainVideo}
+        src={videoUrl || config.mainVideo}
         className="h-full w-full object-contain cursor-pointer"
         playsInline
         preload="metadata"
@@ -105,5 +106,3 @@ function VideoPlayer() {
     </motion.div>
   )
 }
-
-export default VideoPlayer

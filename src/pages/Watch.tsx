@@ -1,10 +1,14 @@
-import { useNavigate } from "react-router"
+import { useNavigate, useLocation } from "react-router"
 import { ArrowLeft } from "lucide-react"
 
 import VideoPlayer from "../components/VideoPlayer"
 
 function Watch() {
   const navigate = useNavigate()
+  const location = useLocation()
+  
+  // Conditionally receive video URL if we launched a specific memory instead of the main story
+  const videoUrl = location.state?.videoUrl
 
   return (
     <main className="relative min-h-screen bg-black">
@@ -18,7 +22,7 @@ function Watch() {
         <span className="hidden sm:inline">Back</span>
       </button>
 
-      <VideoPlayer />
+      <VideoPlayer videoUrl={videoUrl} />
     </main>
   )
 }
