@@ -15,6 +15,11 @@ export const config = {
     image: "/images/hero/hero.webp",
   },
 
+  audio: {
+    background: "/audio/background.mp3",
+    ending: "/audio/ending.mp3",
+  },
+
   mainVideo: "/videos/story.mp4",
 
   finalMessage:

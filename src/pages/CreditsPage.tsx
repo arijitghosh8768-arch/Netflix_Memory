@@ -2,12 +2,14 @@ import { useState, useEffect } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import Credits from "../components/Credits"
 import FinalMessage from "../components/FinalMessage"
-
-// ponytail: A pure simple finite state machine to manage the cinematic sequence.
-// No bloated sequence/timeline libraries required.
+import AudioController from "../components/AudioController"
+import useBackgroundAudio from "../hooks/useBackgroundAudio"
+import { config } from "../data/config"
 
 export default function CreditsPage() {
   const [phase, setPhase] = useState<"quote" | "credits" | "final">("quote")
+  
+  const { isPlaying, isMuted, volume, togglePlay, play, toggleMute, setVolume } = useBackgroundAudio(config.audio?.ending, false)
 
   useEffect(() => {
     // Phase 1: Quote is visible for 4s before cross-fading to the credits
@@ -16,6 +18,11 @@ export default function CreditsPage() {
       return () => clearTimeout(timer)
     }
   }, [phase])
+
+  useEffect(() => {
+    // Attempt to automatically play the ending audio if the browser allows it (usually does since user clicked play on the video previously)
+    play()
+  }, [play])
 
   return (
     <main className="relative min-h-screen bg-black flex flex-col items-center justify-center overflow-hidden">
@@ -43,6 +50,15 @@ export default function CreditsPage() {
           <FinalMessage />
         )}
       </AnimatePresence>
+
+      <AudioController
+        isPlaying={isPlaying}
+        isMuted={isMuted}
+        volume={volume}
+        onTogglePlay={togglePlay}
+        onToggleMute={toggleMute}
+        onVolumeChange={setVolume}
+      />
     </main>
   )
 }
