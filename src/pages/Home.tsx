@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react"
+import { motion } from "framer-motion"
 import { memories, type Memory } from "../data/memories"
 import { config } from "../data/config"
 import Navbar from "../components/Navbar"
@@ -22,7 +23,12 @@ function Home() {
   const specialMemories = useMemo(() => memories.filter(m => m.category.includes("Special")), [])
 
   return (
-    <main className="min-h-screen bg-[#080808] text-white">
+    <motion.main
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.8, ease: "easeInOut" }}
+      className="min-h-screen bg-[#080808] text-white"
+    >
       <Navbar />
       <Hero />
 
@@ -59,7 +65,7 @@ function Home() {
         onToggleMute={toggleMute}
         onVolumeChange={setVolume}
       />
-    </main>
+    </motion.main>
   )
 }
 

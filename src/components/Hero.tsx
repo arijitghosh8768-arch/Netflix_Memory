@@ -14,7 +14,7 @@ export default function Hero() {
       <div className="absolute inset-0">
         <img src={config.hero.image} alt="Hero" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#080808]/90 via-[#080808]/40 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#080808] via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#080808] via-[#080808]/60 to-transparent" />
       </div>
 
       <div className="absolute inset-0 flex flex-col justify-end px-4 md:px-12 pb-16 md:pb-24 w-full md:w-2/3 lg:w-1/2">
