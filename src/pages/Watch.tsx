@@ -1,15 +1,24 @@
-function Watch() {
-  return (
-    <main className="min-h-screen bg-black text-white flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-3xl font-semibold">
-          Watch
-        </h1>
+import { useNavigate } from "react-router"
+import { ArrowLeft } from "lucide-react"
 
-        <p className="mt-4 text-gray-400">
-          Video player will come here.
-        </p>
-      </div>
+import VideoPlayer from "../components/VideoPlayer"
+
+function Watch() {
+  const navigate = useNavigate()
+
+  return (
+    <main className="relative min-h-screen bg-black">
+      <button
+        type="button"
+        onClick={() => navigate(-1)}
+        className="absolute left-4 top-4 z-30 flex items-center gap-2 text-white/80 transition-colors hover:text-white md:left-8 md:top-6 cursor-pointer"
+        aria-label="Go back"
+      >
+        <ArrowLeft size={22} />
+        <span className="hidden sm:inline">Back</span>
+      </button>
+
+      <VideoPlayer />
     </main>
   )
 }
