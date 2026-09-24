@@ -17,6 +17,8 @@ export default function MovieRow({ title, memories, onMemoryClick }: MovieRowPro
         {memories.map(memory => (
           <MovieCard key={memory.id} memory={memory} onClick={onMemoryClick} />
         ))}
+        {/* Fix for right-side scroll padding on mobile */}
+        <div className="w-1 md:hidden shrink-0" aria-hidden="true" />
       </div>
     </div>
   )

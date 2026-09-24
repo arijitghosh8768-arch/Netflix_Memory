@@ -12,7 +12,7 @@ export default function MovieCard({ memory, onClick }: MovieCardProps) {
     <motion.button
       type="button"
       onClick={() => onClick(memory)}
-      className="group relative flex-none w-[200px] md:w-[280px] aspect-video rounded-md overflow-hidden bg-[#141414] cursor-pointer snap-start border border-white/5 focus-visible:outline-2 focus-visible:outline-white text-left block"
+      className="group relative flex-none w-[160px] sm:w-[200px] md:w-[240px] lg:w-[280px] aspect-video rounded-md overflow-hidden bg-[#141414] cursor-pointer snap-start border border-white/5 focus-visible:outline-2 focus-visible:outline-white text-left block"
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.98 }}
       transition={{ duration: 0.2 }}

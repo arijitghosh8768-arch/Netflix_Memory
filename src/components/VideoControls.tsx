@@ -60,7 +60,7 @@ function VideoControls({
         <button
           type="button"
           onClick={onPlay}
-          className="text-white transition-opacity hover:opacity-70 cursor-pointer"
+          className="text-white transition-opacity hover:opacity-70 cursor-pointer p-2 -m-2"
           aria-label={isPlaying ? "Pause video" : "Play video"}
         >
           {isPlaying ? <Pause size={24} /> : <Play size={24} />}
@@ -69,7 +69,7 @@ function VideoControls({
         <button
           type="button"
           onClick={onMute}
-          className="text-white transition-opacity hover:opacity-70 cursor-pointer"
+          className="text-white transition-opacity hover:opacity-70 cursor-pointer p-2 -m-2"
           aria-label={isMuted ? "Unmute video" : "Mute video"}
         >
           {isMuted || volume === 0 ? <VolumeX size={23} /> : <Volume2 size={23} />}
@@ -94,7 +94,7 @@ function VideoControls({
           <button
             type="button"
             onClick={onFullscreen}
-            className="text-white transition-opacity hover:opacity-70 cursor-pointer"
+            className="text-white transition-opacity hover:opacity-70 cursor-pointer p-2 -m-2"
             aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
           >
             {isFullscreen ? <Minimize size={23} /> : <Maximize size={23} />}

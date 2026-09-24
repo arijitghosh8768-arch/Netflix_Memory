@@ -22,7 +22,7 @@ export default function FinalMessage() {
     >
       <p className="text-rose-600 tracking-[0.4em] text-xs font-semibold uppercase mb-10">The End</p>
 
-      <h2 className="text-xl md:text-3xl font-serif leading-relaxed text-white mb-12">
+      <h2 className="text-xl md:text-3xl font-serif leading-relaxed text-white mb-12 text-balance">
         {config.finalMessage}
       </h2>
 

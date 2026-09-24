@@ -13,7 +13,7 @@ export default function AudioController({
   isPlaying, isMuted, volume, onTogglePlay, onToggleMute, onVolumeChange
 }: AudioControllerProps) {
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-black/60 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full shadow-2xl transition-all hover:border-white/20">
+    <div className="fixed bottom-6 right-6 z-40 flex items-center gap-3 bg-black/60 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full shadow-2xl transition-all hover:border-white/20">
       <button
         onClick={onTogglePlay}
         aria-label={isPlaying ? "Pause music" : "Play music"}

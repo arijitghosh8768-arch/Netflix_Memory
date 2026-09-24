@@ -19,16 +19,24 @@ export default function MoreInfoModal({
 }: MoreInfoModalProps) {
   const navigate = useNavigate()
   const modalRef = useRef<HTMLDivElement>(null)
+  const previousFocusRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => e.key === "Escape" && onClose()
     if (isOpen) {
+      previousFocusRef.current = document.activeElement as HTMLElement
       window.addEventListener("keydown", handleEsc)
       document.body.style.overflow = "hidden" // Prevent background scrolling
+      // Push focus into modal for accessibility after animation
+      setTimeout(() => modalRef.current?.focus(), 100)
     }
     return () => {
       window.removeEventListener("keydown", handleEsc)
       document.body.style.overflow = "unset"
+      // Restore focus
+      if (previousFocusRef.current) {
+        previousFocusRef.current.focus()
+      }
     }
   }, [isOpen, onClose])
 
@@ -40,7 +48,7 @@ export default function MoreInfoModal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -52,6 +60,7 @@ export default function MoreInfoModal({
             ref={modalRef}
             role="dialog"
             aria-modal="true"
+            tabIndex={-1}
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
