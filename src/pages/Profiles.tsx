@@ -1,19 +1,31 @@
-import { Link } from 'react-router'
+import { profiles } from "../data/profiles"
 
 function Profiles() {
   return (
-    <main className="min-h-screen bg-[#080808] text-white flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-3xl font-semibold">
-          Who's Watching?
-        </h1>
+    <main className="min-h-screen bg-[#080808] text-white flex flex-col items-center justify-center p-8">
+      <h1 className="text-3xl font-semibold">
+        Who's Watching?
+      </h1>
 
-        <Link
-          to="/home"
-          className="inline-block mt-6 px-5 py-3 bg-white text-black rounded-lg"
-        >
-          Select Profile
-        </Link>
+      <div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-6">
+        {profiles.map((profile) => (
+          <div
+            key={profile.id}
+            className="text-center"
+          >
+            <div className="w-28 h-28 rounded-lg bg-[#181818] overflow-hidden">
+              <img
+                src={profile.image}
+                alt={profile.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            <p className="mt-3 text-gray-300">
+              {profile.name}
+            </p>
+          </div>
+        ))}
       </div>
     </main>
   )
