@@ -1,17 +1,22 @@
-function Loading() {
-  return (
-    <main className="min-h-screen bg-[#080808] text-white flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold tracking-widest">
-          OUR STORY
-        </h1>
+import { useEffect } from "react"
+import { useNavigate } from "react-router"
 
-        <p className="mt-4 text-gray-400">
-          Loading your story...
-        </p>
-      </div>
-    </main>
-  )
+import LoadingScreen from "../components/LoadingScreen"
+
+function Loading() {
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    // ponytail: forced 3.2s delay purely for cinematic effect. 
+    // Upgrade path: tie this to actual asset preloading if the bundle/assets get large.
+    const timer = setTimeout(() => {
+      navigate("/profiles", { replace: true })
+    }, 3200)
+
+    return () => clearTimeout(timer)
+  }, [navigate])
+
+  return <LoadingScreen />
 }
 
 export default Loading
