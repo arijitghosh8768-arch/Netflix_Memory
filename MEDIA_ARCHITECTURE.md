@@ -77,3 +77,12 @@ Status: PARTIALLY VERIFIED / BLOCKED.
 - Cannot apply migration live (`supabase db push`) because we are intentionally not using the exposed database password/scratch scripts.
 - Schema foundation is verified locally and READY for the public media Edge Function logic.
 
+## STEP 30E — SECURE PUBLIC MEDIA EDGE FUNCTION
+
+Status: BLOCKED (Awaiting live migration 004 & function deployment)
+- Designed and implemented `public-media-url` Edge Function in Deno to provide short-lived (1 hr) signed URLs to anonymous visitors of published couples.
+- Edge function validates couple status (`PUBLISHED`), media ownership (`media_assets.couple_id`), and explicit media assignment (`media_assignments`) before invoking the privileged admin Storage client to generate the signed URL.
+- Added frontend integration via `publicMediaService.ts` and `usePublicMediaUrl.ts` Hook.
+- Security Audit PASSED: No service-role or database credentials exposed in the React code. The edge function relies strictly on secure server-side environment variables (`SUPABASE_SERVICE_ROLE_KEY`).
+- Live tests are BLOCKED until `004_media_assignments.sql` is manually applied and the edge function is pushed to the live Supabase project by an authenticated administrator.
+
