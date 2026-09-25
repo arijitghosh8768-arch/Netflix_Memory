@@ -1,5 +1,5 @@
 import { motion } from "framer-motion"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 
 interface LoadingScreenProps {
   onComplete?: () => void
@@ -7,6 +7,8 @@ interface LoadingScreenProps {
 
 function LoadingScreen({ onComplete }: LoadingScreenProps) {
   const [videoFailed, setVideoFailed] = useState(false)
+  const [needsInteraction, setNeedsInteraction] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
 
   // Fallback timer if video fails to load or isn't provided
   useEffect(() => {
@@ -15,6 +17,26 @@ function LoadingScreen({ onComplete }: LoadingScreenProps) {
       return () => clearTimeout(timer)
     }
   }, [videoFailed, onComplete])
+
+  useEffect(() => {
+    if (videoRef.current) {
+      const playPromise = videoRef.current.play()
+      if (playPromise !== undefined) {
+        playPromise.catch((error) => {
+          // Browser blocked unmuted autoplay
+          console.warn("Autoplay with sound blocked:", error)
+          setNeedsInteraction(true)
+        })
+      }
+    }
+  }, [])
+
+  const handleInteract = () => {
+    setNeedsInteraction(false)
+    if (videoRef.current) {
+      videoRef.current.play().catch(() => setVideoFailed(true))
+    }
+  }
 
   // Try to play the video. If it fails, fallback to the text animation.
   return (
@@ -26,15 +48,34 @@ function LoadingScreen({ onComplete }: LoadingScreenProps) {
       transition={{ duration: 1 }}
     >
       {!videoFailed && (
-        <video
-          src="/videos/intro.mp4"
-          autoPlay
-          muted
-          playsInline
-          className="h-full w-full object-cover"
-          onEnded={onComplete}
-          onError={() => setVideoFailed(true)}
-        />
+        <>
+          <video
+            ref={videoRef}
+            src="/videos/intro.mp4"
+            playsInline
+            className="h-full w-full object-cover"
+            onEnded={onComplete}
+            onError={() => setVideoFailed(true)}
+          />
+          
+          {needsInteraction && (
+            <div 
+              className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/90 cursor-pointer"
+              onClick={handleInteract}
+            >
+              <div className="flex flex-col items-center animate-pulse transition hover:scale-105">
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-600/90 text-white shadow-[0_0_40px_rgba(220,38,38,0.4)]">
+                  <svg className="h-10 w-10 ml-2" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </div>
+                <p className="mt-8 text-lg tracking-[0.3em] font-light text-white/70 uppercase">
+                  Click to enter
+                </p>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {videoFailed && (
