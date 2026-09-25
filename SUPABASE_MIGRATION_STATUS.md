@@ -48,3 +48,8 @@ Status: NOT EXECUTED - ENVIRONMENT NOT CONFIGURED. Migrations are prepared local
 ## STEP 29 - LIVE MIGRATION
 
 Status: APPLIED. Schema and RLS policies successfully applied to production project.
+
+
+## STEP 30 — MEDIA E2E
+
+Status: BLOCKED. Storage bucket not configured.

@@ -85,3 +85,8 @@ Status: NOT EXECUTED. Real cross-tenant and RLS isolation tests require a live S
 ## STEP 29 - LIVE VERIFICATION
 
 Status: LIVE VERIFIED. Migrations applied via pooler connection string. RLS natively blocks anonymous reads on empty tables.
+
+
+## STEP 30 — MEDIA E2E
+
+Status: BLOCKED. Storage bucket not configured.

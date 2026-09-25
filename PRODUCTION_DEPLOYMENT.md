@@ -62,3 +62,8 @@ Status: BLOCKED - ENVIRONMENT NOT CONFIGURED. A live Supabase project and Vercel
 ## E2E LIVE CONFIGURATION (STEP 29)
 
 Status: SUPABASE READY. Migrations pushed via Pooler. Auth responding.
+
+
+## STEP 30 — MEDIA E2E
+
+Status: BLOCKED. Storage bucket not configured.
