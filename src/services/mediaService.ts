@@ -1,97 +1,34 @@
-import type { MediaAsset, MediaAssignment } from '../types/models'
+import type { MediaAsset } from '../types/models'
 import { authService } from './authService'
-
-const ASSETS_KEY = 'our-story-media-assets'
-const ASSIGNMENTS_KEY = 'our-story-media-assignments'
+import { supabase, isSupabaseConfigured } from '../lib/supabase'
 
 export const mediaService = {
-  // DEVELOPMENT ONLY PERSISTENCE
-  _loadAssets: (): MediaAsset[] => {
-    try {
-      const stored = localStorage.getItem(ASSETS_KEY)
-      return stored ? JSON.parse(stored) : []
-    } catch {
-      return []
+  getMediaForCouple: async (coupleId: string): Promise<MediaAsset[]> => {
+    if (!isSupabaseConfigured) return JSON.parse(localStorage.getItem('our-story-media-assets') || '[]').filter((a: any) => a.coupleId === coupleId)
+    const { data, error } = await supabase!.from('media_assets').select('*').eq('couple_id', coupleId)
+    if (error) throw new Error(error.message)
+    return data.map((r: any) => ({ ...r, coupleId: r.couple_id, storageKey: r.storage_key, mimeType: r.mime_type }))
+  },
+
+  createMedia: async (coupleId: string, data: Partial<MediaAsset>): Promise<MediaAsset> => {
+    await authService.requireAdmin()
+    if (!isSupabaseConfigured) {
+      const fallback = JSON.parse(localStorage.getItem('our-story-media-assets') || '[]')
+      const newMedia = { id: `media-${Date.now()}`, coupleId, type: data.type || "IMAGE", name: data.name || "Untitled", storageKey: data.storageKey || "", mimeType: data.mimeType || "", size: data.size || 1024, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
+      fallback.push(newMedia)
+      localStorage.setItem('our-story-media-assets', JSON.stringify(fallback))
+      return newMedia
     }
+    const row = { couple_id: coupleId, type: data.type, name: data.name, storage_key: data.storageKey, mime_type: data.mimeType, size: data.size }
+    const { data: result, error } = await supabase!.from('media_assets').insert([row]).select().single()
+    if (error) throw new Error(error.message)
+    return { ...result, coupleId: result.couple_id, storageKey: result.storage_key, mimeType: result.mime_type }
   },
 
-  _saveAssets: (assets: MediaAsset[]) => {
-    localStorage.setItem(ASSETS_KEY, JSON.stringify(assets))
-  },
-
-  _loadAssignments: (): MediaAssignment[] => {
-    try {
-      const stored = localStorage.getItem(ASSIGNMENTS_KEY)
-      return stored ? JSON.parse(stored) : []
-    } catch {
-      return []
-    }
-  },
-
-  _saveAssignments: (assignments: MediaAssignment[]) => {
-    localStorage.setItem(ASSIGNMENTS_KEY, JSON.stringify(assignments))
-  },
-
-  // PUBLIC API
-
-  getMediaForCouple: (coupleId: string): MediaAsset[] => {
-    return mediaService._loadAssets().filter(a => a.coupleId === coupleId)
-  },
-
-  getMediaById: (mediaId: string): MediaAsset | undefined => {
-    return mediaService._loadAssets().find(a => a.id === mediaId)
-  },
-
-  createMedia: (coupleId: string, data: Partial<MediaAsset>): MediaAsset => {
-    authService.requireAdmin()
-    const assets = mediaService._loadAssets()
-    const newMedia: MediaAsset = {
-      id: `media-${Date.now()}`,
-      coupleId,
-      type: data.type || "IMAGE",
-      name: data.name || "Untitled",
-      storageKey: data.storageKey || `/images/demo-${Date.now()}.jpg`, 
-      mimeType: data.mimeType || "image/jpeg",
-      size: data.size || 1024,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
-    assets.push(newMedia)
-    mediaService._saveAssets(assets)
-    return newMedia
-  },
-
-  deleteMedia: (mediaId: string) => {
-    authService.requireAdmin()
-    const assets = mediaService._loadAssets()
-    const updatedAssets = assets.filter(a => a.id !== mediaId)
-    mediaService._saveAssets(updatedAssets)
-
-    // Remove associated assignments
-    const assignments = mediaService._loadAssignments()
-    const updatedAssignments = assignments.filter(a => a.mediaId !== mediaId)
-    mediaService._saveAssignments(updatedAssignments)
-  },
-
-  assignMedia: (data: Omit<MediaAssignment, 'id'>): MediaAssignment => {
-    authService.requireAdmin()
-    const assignments = mediaService._loadAssignments()
-    const newAssignment: MediaAssignment = {
-      id: `assignment-${Date.now()}`,
-      ...data
-    }
-    assignments.push(newAssignment)
-    mediaService._saveAssignments(assignments)
-    return newAssignment
-  },
-
-  removeMediaAssignment: (assignmentId: string) => {
-    authService.requireAdmin()
-    const assignments = mediaService._loadAssignments()
-    mediaService._saveAssignments(assignments.filter(a => a.id !== assignmentId))
-  },
-
-  getAssignmentsForCouple: (coupleId: string): MediaAssignment[] => {
-    return mediaService._loadAssignments().filter(a => a.coupleId === coupleId)
+  deleteMedia: async (mediaId: string): Promise<void> => {
+    await authService.requireAdmin()
+    if (!isSupabaseConfigured) return
+    const { error } = await supabase!.from('media_assets').delete().eq('id', mediaId)
+    if (error) throw new Error(error.message)
   }
 }

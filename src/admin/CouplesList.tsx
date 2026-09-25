@@ -6,9 +6,19 @@ import type { Couple } from "../types/models"
 export default function CouplesList() {
   const [couples, setCouples] = useState<Couple[]>([])
 
+  const [isLoading, setIsLoading] = useState(true)
+
   useEffect(() => {
-    setCouples(coupleService.getAllCouples())
+    coupleService.getAllCouples().then(data => {
+      setCouples(data)
+      setIsLoading(false)
+    }).catch(err => {
+      console.error(err)
+      setIsLoading(false)
+    })
   }, [])
+
+  if (isLoading) return <div className="p-10 text-white">Loading couples...</div>
 
   return (
     <div className="p-10">

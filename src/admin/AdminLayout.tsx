@@ -1,16 +1,45 @@
 import { Outlet, Link, useLocation, Navigate, useNavigate } from "react-router"
 import { authService } from "../services/authService"
+import { useEffect, useState } from "react"
+import type { Session } from '@supabase/supabase-js'
 
 export default function AdminLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   
-  if (!authService.getCurrentAdmin()) {
+  const [session, setSession] = useState<Session | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    // Check initial session
+    authService.getCurrentSession().then(s => {
+      setSession(s)
+      setIsLoading(false)
+    })
+
+    // Listen for auth changes
+    const { data: { subscription } } = authService.onAuthStateChange((_event, newSession) => {
+      setSession(newSession)
+      if (!newSession) {
+        navigate("/admin/login")
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [navigate])
+  
+  if (isLoading) {
+    return <div className="flex h-screen items-center justify-center bg-gray-900 text-white">Verifying session...</div>
+  }
+
+  if (!session) {
     return <Navigate to="/admin/login" replace />
   }
 
-  const handleLogout = () => {
-    authService.logoutAdmin()
+  const handleLogout = async () => {
+    await authService.logoutAdmin()
     navigate("/admin/login")
   }
   
@@ -28,7 +57,7 @@ export default function AdminLayout() {
       <aside className="w-64 bg-gray-950 flex flex-col border-r border-gray-800">
         <div className="p-6">
           <h1 className="text-xl font-bold tracking-widest uppercase">OUR STORY</h1>
-          <p className="text-xs text-red-500 mt-1 font-semibold">PRODUCTION FOUNDATION</p>
+          <p className="text-xs text-red-500 mt-1 font-semibold">PRODUCTION PLATFORM</p>
           <button onClick={handleLogout} className="text-xs text-gray-400 mt-3 hover:text-white transition">← Sign Out</button>
         </div>
         
@@ -49,8 +78,8 @@ export default function AdminLayout() {
           ))}
         </nav>
         
-        <div className="p-6 text-xs text-gray-500 border-t border-gray-800">
-          V2 Architecture Preview
+        <div className="p-6 text-xs text-gray-500 border-t border-gray-800 truncate">
+          {session.user?.email}
         </div>
       </aside>
 

@@ -9,13 +9,28 @@ export default function CoupleWebsite() {
   const { slug } = useParams<{ slug: string }>()
   const [couple, setCouple] = useState<Couple | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
+    let active = true
     if (slug) {
-      const found = coupleService.getCoupleBySlug(slug)
-      setCouple(found || null)
+      Promise.all([
+        coupleService.getCoupleBySlug(slug),
+        authService.getCurrentAdmin()
+      ]).then(([found, adminStatus]) => {
+        if (active) {
+          setCouple(found || null)
+          setIsAdmin(adminStatus)
+          setLoading(false)
+        }
+      }).catch(err => {
+        console.error(err)
+        if (active) setLoading(false)
+      })
+    } else {
+      setLoading(false)
     }
-    setLoading(false)
+    return () => { active = false }
   }, [slug])
 
   if (loading) {
@@ -31,8 +46,6 @@ export default function CoupleWebsite() {
       </div>
     )
   }
-
-  const isAdmin = authService.getCurrentAdmin()
 
   if (couple.status === 'ARCHIVED' && !isAdmin) {
     return (

@@ -28,16 +28,19 @@ export default function CoupleEditor() {
     setTemplates(coupleService.getTemplates())
     
     if (id && id !== "new") {
-      const existing = coupleService.getCoupleById(id)
-      if (existing) {
-        setFormData(existing)
-        setMediaAssets(mediaService.getMediaForCouple(id))
-        setProfiles(contentService.getProfiles(id))
-        setMemories(contentService.getMemories(id))
-        setTimelineEvents(contentService.getTimelineEvents(id))
-      } else {
-        navigate("/admin/couples")
+      const loadData = async () => {
+        const existing = await coupleService.getCoupleById(id)
+        if (existing) {
+          setFormData(existing)
+          setMediaAssets(await mediaService.getMediaForCouple(id))
+          setProfiles(await contentService.getProfiles(id))
+          setMemories(await contentService.getMemories(id))
+          setTimelineEvents(await contentService.getTimelineEvents(id))
+        } else {
+          navigate("/admin/couples")
+        }
       }
+      loadData()
     }
   }, [id, navigate])
 
@@ -58,13 +61,17 @@ export default function CoupleEditor() {
     }
   }
 
-  const handleSaveDraft = () => {
-    if (id === "new") {
-      const newCouple = coupleService.createCouple({ ...formData, status: "DRAFT" })
-      navigate(`/admin/couples/${newCouple.id}`)
-    } else {
-      coupleService.updateCouple(id!, formData)
-      alert("Draft saved!")
+  const handleSaveDraft = async () => {
+    try {
+      if (id === "new") {
+        const newCouple = await coupleService.createCouple({ ...formData, status: "DRAFT" })
+        navigate(`/admin/couples/${newCouple.id}`)
+      } else {
+        await coupleService.updateCouple(id!, formData)
+        alert("Draft saved!")
+      }
+    } catch (e: any) {
+      alert("Error saving: " + e.message)
     }
   }
 
@@ -80,16 +87,20 @@ export default function CoupleEditor() {
     return errors
   }
 
-  const handlePublish = () => {
+  const handlePublish = async () => {
     const errors = validatePublishing()
     if (errors.length > 0) {
       alert("Cannot publish:\n- " + errors.join("\n- "))
       return
     }
     if (window.confirm(`Publish this website?\n\nIt will become publicly accessible at /c/${formData.slug}`)) {
-      coupleService.updateCouple(id!, { ...formData, status: "PUBLISHED", publishedAt: new Date().toISOString() })
-      setFormData(prev => ({ ...prev, status: "PUBLISHED" }))
-      alert("Website published successfully!")
+      try {
+        await coupleService.updateCouple(id!, { ...formData, status: "PUBLISHED", publishedAt: new Date().toISOString() })
+        setFormData(prev => ({ ...prev, status: "PUBLISHED" }))
+        alert("Website published successfully!")
+      } catch (e: any) {
+        alert("Error publishing: " + e.message)
+      }
     }
   }
 

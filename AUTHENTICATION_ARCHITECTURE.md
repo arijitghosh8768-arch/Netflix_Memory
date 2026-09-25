@@ -74,3 +74,8 @@ In development, the UI operates using `localStorage` persistence wrapped by secu
 ## STEP 23 - PRODUCTION AUDIT
 
 Authentication structure has been audited. RLS policies have been designed to protect tenant data at the database tier.
+
+
+## STEP 24 - REAL SUPABASE AUTH
+
+Authentication now uses the official @supabase/supabase-js client, validating real JWT sessions and replacing local dev tokens.

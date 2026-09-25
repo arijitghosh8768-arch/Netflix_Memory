@@ -19,12 +19,13 @@ export default function MediaManager() {
   
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const loadData = () => {
+  const loadData = async () => {
     if (id) {
-      const c = coupleService.getCoupleById(id)
+      const c = await coupleService.getCoupleById(id)
       setCouple(c || null)
       if (c) {
-        setMedia(mediaService.getMediaForCouple(id))
+        const m = await mediaService.getMediaForCouple(id)
+        setMedia(m)
       }
     }
   }
@@ -92,7 +93,7 @@ export default function MediaManager() {
       
       const storageKey = await storageService.uploadMedia(couple.id, activeTab.toLowerCase(), file)
       
-      mediaService.createMedia(couple.id, {
+      await mediaService.createMedia(couple.id, {
         type: activeTab,
         name: file.name,
         storageKey,
@@ -100,7 +101,7 @@ export default function MediaManager() {
         size: file.size
       })
       
-      loadData()
+      await loadData()
     } catch (err: any) {
       setUploadError(err.message || "Upload failed")
     } finally {

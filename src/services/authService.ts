@@ -1,51 +1,48 @@
-/**
- * Authentication & Authorization Foundation
- * 
- * Selected Architecture: Supabase
- * In a Vite SPA, Supabase Auth utilizes local storage or session storage for the JWT.
- * For this foundational step, we simulate the credential validation, session creation, 
- * and authorization checks before full cloud integration.
- */
-
-const SESSION_KEY = 'admin-session-foundation'
+import { supabase } from '../lib/supabase'
+import type { Session } from '@supabase/supabase-js'
 
 export const authService = {
-  /**
-   * Validates credentials and creates an admin session.
-   */
   loginAdmin: async (email: string, password: string): Promise<boolean> => {
-    // Development Foundation Mock
-    // Production will call Supabase: supabase.auth.signInWithPassword({ email, password })
-    if (email === 'admin@ourstory.com' && password === 'admin') {
-      sessionStorage.setItem(SESSION_KEY, 'true')
-      return true
+    if (!supabase) {
+      throw new Error('Supabase is not configured. Please check environment variables.')
     }
-    throw new Error('Invalid email or password.')
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) throw new Error(error.message)
+    return true
   },
 
-  /**
-   * Invalidates session and clears local credentials.
-   */
   logoutAdmin: async (): Promise<void> => {
-    // Production: supabase.auth.signOut()
-    sessionStorage.removeItem(SESSION_KEY)
+    if (!supabase) return
+    const { error } = await supabase.auth.signOut()
+    if (error) throw new Error(error.message)
   },
 
-  /**
-   * Returns current authenticated status.
-   */
-  getCurrentAdmin: (): boolean => {
-    // Production: supabase.auth.getSession()
-    return sessionStorage.getItem(SESSION_KEY) === 'true'
+  getCurrentSession: async (): Promise<Session | null> => {
+    if (!supabase) return null
+    const { data: { session }, error } = await supabase.auth.getSession()
+    if (error) {
+      console.error('Error fetching session:', error.message)
+      return null
+    }
+    return session
   },
 
-  /**
-   * Enforces server-side authorization conceptually for API methods.
-   * Throws if unauthorized.
-   */
-  requireAdmin: (): void => {
-    if (!authService.getCurrentAdmin()) {
+  getCurrentAdmin: async (): Promise<boolean> => {
+    const session = await authService.getCurrentSession()
+    return !!session
+  },
+
+  requireAdmin: async (): Promise<void> => {
+    const isAdmin = await authService.getCurrentAdmin()
+    if (!isAdmin) {
       throw new Error('Unauthorized: Admin access required.')
     }
+  },
+
+  onAuthStateChange: (callback: (event: string, session: Session | null) => void) => {
+    if (!supabase) {
+      return { data: { subscription: { unsubscribe: () => {} } } }
+    }
+    return supabase.auth.onAuthStateChange(callback)
   }
 }

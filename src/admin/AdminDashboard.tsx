@@ -5,12 +5,13 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState({ total: 0, published: 0, draft: 0, archived: 0 })
 
   useEffect(() => {
-    const couples = coupleService.getAllCouples()
-    setStats({
-      total: couples.length,
-      published: couples.filter((c) => c.status === "PUBLISHED").length,
-      draft: couples.filter((c) => c.status === "DRAFT").length,
-      archived: couples.filter((c) => c.status === "ARCHIVED").length,
+    coupleService.getAllCouples().then(couples => {
+      setStats({
+        total: couples.length,
+        published: couples.filter((c) => c.status === "PUBLISHED").length,
+        draft: couples.filter((c) => c.status === "DRAFT").length,
+        archived: couples.filter((c) => c.status === "ARCHIVED").length,
+      })
     })
   }, [])
 

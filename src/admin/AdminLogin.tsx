@@ -79,7 +79,7 @@ export default function AdminLogin() {
 
         <div className="mt-8 text-center border-t border-gray-800 pt-6">
           <p className="text-xs text-gray-500">
-            Development Mode: Use <b>admin@ourstory.com</b> / <b>admin</b>
+            Secure Admin Access
           </p>
         </div>
       </div>
