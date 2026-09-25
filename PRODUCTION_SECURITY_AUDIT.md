@@ -90,3 +90,10 @@ Status: LIVE VERIFIED. Migrations applied via pooler connection string. RLS nati
 ## STEP 30 — MEDIA E2E
 
 Status: BLOCKED. Storage bucket not configured.
+## STEP 30B — LIVE MEDIA E2E (CORRECTED)
+
+Status: PARTIALLY VERIFIED / BLOCKED. 
+- Bucket exists and policies are applied.
+- Automated testing was blocked by Auth rate limits.
+- Critical architectural gap identified: The frontend Vite SPA cannot securely generate signed URLs for anonymous public visitors without exposing private bucket credentials. An Edge Function or alternative backend delivery mechanism is required.
+
