@@ -66,6 +66,17 @@ export default function VideoPlayer({ videoUrl }: VideoPlayerProps) {
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange)
   }, [])
 
+  // Safety timeout in case YouTube API gets blocked by adblockers/privacy shields
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (isLoading) {
+        setIsLoading(false)
+        setShowPlayOverlay(true)
+      }
+    }, 4000)
+    return () => clearTimeout(timer)
+  }, [isLoading])
+
   // Keyboard shortcut support
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -139,7 +150,11 @@ export default function VideoPlayer({ videoUrl }: VideoPlayerProps) {
           onReady={() => {
             setIsLoading(false)
             setIsPlaying(true)
-            // If the browser blocks the play command, the onPause event will fire immediately after.
+          }}
+          onError={(e) => {
+            console.error("YouTube Player Error:", e)
+            setIsLoading(false)
+            setShowPlayOverlay(true)
           }}
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onProgress={(state: any) => setCurrentTime(state.playedSeconds)}
@@ -151,8 +166,7 @@ export default function VideoPlayer({ videoUrl }: VideoPlayerProps) {
           }}
           onPause={() => {
             setIsPlaying(false)
-            // If it pauses right at the start, autoplay was likely blocked.
-            if (currentTime === 0) setShowPlayOverlay(true)
+            setShowPlayOverlay(true) // Always show big play button when paused for reliability
           }}
           config={({
             youtube: {
