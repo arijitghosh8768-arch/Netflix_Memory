@@ -121,6 +121,20 @@ export const contentService = {
     if (error) throw new Error(error.message)
     return data.map((r: any) => ({ ...r, coupleId: r.couple_id, mediaId: r.media_id, sortOrder: r.sort_order }))
   },
+  saveProfile: async (profile: Partial<Profile>): Promise<Profile> => {
+    await authService.requireAdmin()
+    if (!isSupabaseConfigured) throw new Error('Supabase not configured.')
+    const row = { id: profile.id, couple_id: profile.coupleId, name: profile.name, media_id: profile.mediaId, theme: profile.theme, sort_order: profile.sortOrder || 0 }
+    const { data, error } = await supabase!.from('profiles').upsert(row).select().single()
+    if (error) throw new Error(error.message)
+    return { ...data, coupleId: data.couple_id, mediaId: data.media_id, sortOrder: data.sort_order }
+  },
+  deleteProfile: async (id: string): Promise<void> => {
+    await authService.requireAdmin()
+    if (!isSupabaseConfigured) return
+    const { error } = await supabase!.from('profiles').delete().eq('id', id)
+    if (error) throw new Error(error.message)
+  },
   
   getMemories: async (coupleId: string): Promise<Memory[]> => {
     if (!isSupabaseConfigured) return []
@@ -128,11 +142,39 @@ export const contentService = {
     if (error) throw new Error(error.message)
     return data.map((r: any) => ({ ...r, coupleId: r.couple_id, coverMediaId: r.cover_media_id, videoMediaId: r.video_media_id, sortOrder: r.sort_order }))
   },
+  saveMemory: async (memory: Partial<Memory>): Promise<Memory> => {
+    await authService.requireAdmin()
+    if (!isSupabaseConfigured) throw new Error('Supabase not configured.')
+    const row = { id: memory.id, couple_id: memory.coupleId, title: memory.title, category: memory.category, description: memory.description, cover_media_id: memory.coverMediaId, video_media_id: memory.videoMediaId, duration: memory.duration, featured: memory.featured, sort_order: memory.sortOrder || 0 }
+    const { data, error } = await supabase!.from('memories').upsert(row).select().single()
+    if (error) throw new Error(error.message)
+    return { ...data, coupleId: data.couple_id, coverMediaId: data.cover_media_id, videoMediaId: data.video_media_id, sortOrder: data.sort_order }
+  },
+  deleteMemory: async (id: string): Promise<void> => {
+    await authService.requireAdmin()
+    if (!isSupabaseConfigured) return
+    const { error } = await supabase!.from('memories').delete().eq('id', id)
+    if (error) throw new Error(error.message)
+  },
   
   getTimelineEvents: async (coupleId: string): Promise<TimelineEvent[]> => {
     if (!isSupabaseConfigured) return []
     const { data, error } = await supabase!.from('timeline_events').select('*').eq('couple_id', coupleId).order('sort_order', { ascending: true })
     if (error) throw new Error(error.message)
     return data.map((r: any) => ({ ...r, coupleId: r.couple_id, mediaId: r.media_id, sortOrder: r.sort_order }))
+  },
+  saveTimelineEvent: async (event: Partial<TimelineEvent>): Promise<TimelineEvent> => {
+    await authService.requireAdmin()
+    if (!isSupabaseConfigured) throw new Error('Supabase not configured.')
+    const row = { id: event.id, couple_id: event.coupleId, date: event.date, title: event.title, description: event.description, media_id: event.mediaId, sort_order: event.sortOrder || 0 }
+    const { data, error } = await supabase!.from('timeline_events').upsert(row).select().single()
+    if (error) throw new Error(error.message)
+    return { ...data, coupleId: data.couple_id, mediaId: data.media_id, sortOrder: data.sort_order }
+  },
+  deleteTimelineEvent: async (id: string): Promise<void> => {
+    await authService.requireAdmin()
+    if (!isSupabaseConfigured) return
+    const { error } = await supabase!.from('timeline_events').delete().eq('id', id)
+    if (error) throw new Error(error.message)
   }
 }

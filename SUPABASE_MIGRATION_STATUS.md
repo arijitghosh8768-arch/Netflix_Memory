@@ -28,3 +28,8 @@
 
 ### Known Limitations
 - The remaining content mutations (`saveProfile`, `saveMemory`) inside `contentService.ts` have not yet been rewritten to `supabase.from('...').upsert(...)`. They currently just read from Supabase asynchronously but mutative functions might need further async adaptation.
+
+
+## STEP 25 - MUTATIONS
+
+The content mutator gap is closed. All UI edits to content lists map securely to PostgreSQL tables via RLS.

@@ -228,18 +228,72 @@ export default function CoupleEditor() {
     </div>
   )
 
-  const renderLists = (type: 'PROFILES' | 'MEMORIES' | 'TIMELINE') => (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center mb-4">
-        <p className="text-gray-400 text-sm">Manage {type.toLowerCase()} for the couple.</p>
-        <button onClick={() => alert(`Creating ${type.toLowerCase()} will be implemented in the specific list editor.`)} className="bg-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-600">+ Add New</button>
+  const handleAddSubItem = async (type: 'PROFILES' | 'MEMORIES' | 'TIMELINE') => {
+    try {
+      if (type === 'PROFILES') {
+        const name = prompt("Enter profile name:")
+        if (!name) return
+        await contentService.saveProfile({ coupleId: id, name, sortOrder: profiles.length })
+        setProfiles(await contentService.getProfiles(id!))
+      } else if (type === 'MEMORIES') {
+        const title = prompt("Enter memory title:")
+        if (!title) return
+        await contentService.saveMemory({ coupleId: id, title, category: 'General', sortOrder: memories.length })
+        setMemories(await contentService.getMemories(id!))
+      } else if (type === 'TIMELINE') {
+        const title = prompt("Enter timeline event title:")
+        if (!title) return
+        await contentService.saveTimelineEvent({ coupleId: id, title, date: new Date().toISOString().split('T')[0], sortOrder: timelineEvents.length })
+        setTimelineEvents(await contentService.getTimelineEvents(id!))
+      }
+    } catch (e: any) {
+      alert("Error saving: " + e.message)
+    }
+  }
+
+  const handleDeleteSubItem = async (type: 'PROFILES' | 'MEMORIES' | 'TIMELINE', itemId: string) => {
+    if (!window.confirm("Delete this item?")) return
+    try {
+      if (type === 'PROFILES') {
+        await contentService.deleteProfile(itemId)
+        setProfiles(await contentService.getProfiles(id!))
+      } else if (type === 'MEMORIES') {
+        await contentService.deleteMemory(itemId)
+        setMemories(await contentService.getMemories(id!))
+      } else if (type === 'TIMELINE') {
+        await contentService.deleteTimelineEvent(itemId)
+        setTimelineEvents(await contentService.getTimelineEvents(id!))
+      }
+    } catch (e: any) {
+      alert("Error deleting: " + e.message)
+    }
+  }
+
+  const renderLists = (type: 'PROFILES' | 'MEMORIES' | 'TIMELINE') => {
+    const list = type === 'PROFILES' ? profiles : type === 'MEMORIES' ? memories : timelineEvents
+    return (
+      <div className="space-y-4">
+        <div className="flex justify-between items-center mb-4">
+          <p className="text-gray-400 text-sm">Manage {type.toLowerCase()} for the couple.</p>
+          <button onClick={() => handleAddSubItem(type)} className="bg-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-600">+ Add New</button>
+        </div>
+        <div className="space-y-2">
+          {list.length === 0 ? (
+            <div className="bg-gray-900 border border-gray-700 rounded p-8 text-center text-gray-500">
+              No {type.toLowerCase()} yet.
+            </div>
+          ) : (
+            list.map((item: any) => (
+              <div key={item.id} className="bg-gray-900 border border-gray-700 rounded p-4 flex justify-between items-center">
+                <span className="font-semibold text-white">{item.name || item.title}</span>
+                <button onClick={() => handleDeleteSubItem(type, item.id)} className="text-red-500 text-sm hover:text-red-400">Delete</button>
+              </div>
+            ))
+          )}
+        </div>
       </div>
-      <div className="bg-gray-900 border border-gray-700 rounded p-8 text-center">
-        <p className="text-gray-500">List editors (add, edit, delete, reorder) for {type.toLowerCase()} are scaffolded in the contentService.</p>
-        <p className="text-gray-600 text-xs mt-2">Total records: {type === 'PROFILES' ? profiles.length : type === 'MEMORIES' ? memories.length : timelineEvents.length}</p>
-      </div>
-    </div>
-  )
+    )
+  }
 
   const renderPublishing = () => {
     return (

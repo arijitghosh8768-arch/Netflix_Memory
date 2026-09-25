@@ -33,3 +33,8 @@ The editor ensures `contentService` queries and mutations are isolated by `coupl
 
 ## Public Route Behavior
 The V1 cinematic templates (Hero, Home, Timeline, etc.) consume the `CoupleContext`. If the status is not `PUBLISHED`, non-admins are blocked at the router layer (`CoupleWebsite.tsx`).
+
+
+## STEP 25 - CONTENT MUTATIONS
+
+All mutators for Profiles, Memories, and Timeline Events have been fully mapped to Supabase upsert and delete operations, completing the async editor migration.
