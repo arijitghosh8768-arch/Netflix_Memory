@@ -47,3 +47,8 @@ Before going live, the local `contentService.ts` and `coupleService.ts` must be 
 3. Create a test couple.
 4. Upload media to the Hero section (verifying Storage uploads work).
 5. Publish the couple and verify the public route `/c/{slug}` successfully generates signed URLs and displays the media.
+
+
+## E2E DEPLOYMENT VERIFICATION (STEP 27)
+
+Static code audits confirm the environment configurations and Vercel routing paths (SPA rules in \ercel.json\) are robust. The codebase properly isolates \VITE_*\ public keys without exposing service roles or database passwords. Live E2E tests are marked 'NOT EXECUTED — ENVIRONMENT NOT CONFIGURED' because this is a simulated verification without a live deployed Supabase project attached.
