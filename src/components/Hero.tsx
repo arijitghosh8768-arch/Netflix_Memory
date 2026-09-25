@@ -4,10 +4,16 @@ import { Play, Info } from "lucide-react"
 import { useNavigate } from "react-router"
 import { config } from "../data/config"
 import MoreInfoModal from "./MoreInfoModal"
+import { useCouple } from "../context/CoupleContext"
 
 export default function Hero() {
   const navigate = useNavigate()
   const [modalOpen, setModalOpen] = useState(false)
+  const couple = useCouple()
+
+  const title = couple?.heroTitle || config.hero.title
+  const description = couple?.description || config.hero.description
+  const watchPath = couple ? `/c/${couple.slug}/watch` : "/watch"
 
   return (
     <div className="relative h-[75vh] md:h-[85vh] w-full">
@@ -24,7 +30,7 @@ export default function Hero() {
           transition={{ duration: 0.8 }}
           className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4 drop-shadow-lg leading-tight text-balance"
         >
-          {config.hero.title}
+          {title}
         </motion.h1>
 
         <motion.p
@@ -33,7 +39,7 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="text-gray-300 text-sm md:text-lg mb-8 drop-shadow-md max-w-lg leading-relaxed text-balance"
         >
-          {config.hero.description}
+          {description}
         </motion.p>
 
         <motion.div
@@ -43,7 +49,7 @@ export default function Hero() {
           className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 md:gap-4 w-full sm:w-auto"
         >
           <button
-            onClick={() => navigate("/watch")}
+            onClick={() => navigate(watchPath)}
             className="flex items-center justify-center gap-2 bg-white text-black px-6 md:px-8 py-2 md:py-3 rounded md:rounded-md font-semibold hover:bg-white/80 transition-colors cursor-pointer"
           >
             <Play className="w-5 h-5 fill-black" />
@@ -62,8 +68,8 @@ export default function Hero() {
       <MoreInfoModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={config.hero.title}
-        description={config.hero.description}
+        title={title}
+        description={description}
         image={config.hero.image}
       />
     </div>
