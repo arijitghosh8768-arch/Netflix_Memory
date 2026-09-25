@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react"
-import { useNavigate, useParams, Link } from "react-router"
+import { useNavigate, useParams } from "react-router"
 import { coupleService, contentService } from "../services/coupleService"
 import { mediaService } from "../services/mediaService"
 import type { Couple, Template, MediaAsset, Profile, Memory, TimelineEvent } from "../types/models"
+import ProfileForm from "./components/ProfileForm"
+import MemoryForm from "./components/MemoryForm"
+import TimelineForm from "./components/TimelineForm"
 
 export default function CoupleEditor() {
   const { id } = useParams<{ id: string }>()
@@ -24,6 +27,8 @@ export default function CoupleEditor() {
   const [memories, setMemories] = useState<Memory[]>([])
   const [timelineEvents, setTimelineEvents] = useState<TimelineEvent[]>([])
 
+  const [isDirty, setIsDirty] = useState(false)
+
   useEffect(() => {
     setTemplates(coupleService.getTemplates())
     
@@ -36,6 +41,7 @@ export default function CoupleEditor() {
           setProfiles(await contentService.getProfiles(id))
           setMemories(await contentService.getMemories(id))
           setTimelineEvents(await contentService.getTimelineEvents(id))
+          setIsDirty(false)
         } else {
           navigate("/admin/couples")
         }
@@ -44,7 +50,19 @@ export default function CoupleEditor() {
     }
   }, [id, navigate])
 
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault()
+        e.returnValue = ''
+      }
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [isDirty])
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    setIsDirty(true)
     const { name, value, type } = e.target
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked
@@ -56,8 +74,12 @@ export default function CoupleEditor() {
 
   const generateSlug = () => {
     if (formData.person1Name && formData.person2Name) {
+      if (formData.status === 'PUBLISHED' && !window.confirm('This couple is published. Changing the URL slug will break existing links. Are you sure?')) {
+        return
+      }
       const safe = `${formData.person1Name}-${formData.person2Name}`.toLowerCase().replace(/[^a-z0-9-]/g, '')
       setFormData(prev => ({ ...prev, slug: safe }))
+      setIsDirty(true)
     }
   }
 
@@ -65,9 +87,11 @@ export default function CoupleEditor() {
     try {
       if (id === "new") {
         const newCouple = await coupleService.createCouple({ ...formData, status: "DRAFT" })
+        setIsDirty(false)
         navigate(`/admin/couples/${newCouple.id}`)
       } else {
         await coupleService.updateCouple(id!, formData)
+        setIsDirty(false)
         alert("Draft saved!")
       }
     } catch (e: any) {
@@ -78,6 +102,7 @@ export default function CoupleEditor() {
   // Basic Validation
   const validatePublishing = () => {
     const errors = []
+    if (isDirty) errors.push("You have unsaved changes. Save draft first.")
     if (!formData.person1Name || !formData.person2Name) errors.push("Missing names")
     if (!formData.slug) errors.push("Missing unique URL slug")
     if (!formData.heroTitle) errors.push("Missing hero title")
@@ -228,71 +253,117 @@ export default function CoupleEditor() {
     </div>
   )
 
-  const handleAddSubItem = async (type: 'PROFILES' | 'MEMORIES' | 'TIMELINE') => {
-    try {
-      if (type === 'PROFILES') {
-        const name = prompt("Enter profile name:")
-        if (!name) return
-        await contentService.saveProfile({ coupleId: id, name, sortOrder: profiles.length })
-        setProfiles(await contentService.getProfiles(id!))
-      } else if (type === 'MEMORIES') {
-        const title = prompt("Enter memory title:")
-        if (!title) return
-        await contentService.saveMemory({ coupleId: id, title, category: 'General', sortOrder: memories.length })
-        setMemories(await contentService.getMemories(id!))
-      } else if (type === 'TIMELINE') {
-        const title = prompt("Enter timeline event title:")
-        if (!title) return
-        await contentService.saveTimelineEvent({ coupleId: id, title, date: new Date().toISOString().split('T')[0], sortOrder: timelineEvents.length })
-        setTimelineEvents(await contentService.getTimelineEvents(id!))
-      }
-    } catch (e: any) {
-      alert("Error saving: " + e.message)
-    }
+  const [editingProfile, setEditingProfile] = useState<Partial<Profile> | null>(null)
+  const [editingMemory, setEditingMemory] = useState<Partial<Memory> | null>(null)
+  const [editingTimeline, setEditingTimeline] = useState<Partial<TimelineEvent> | null>(null)
+
+  const handleSaveProfile = async (data: Partial<Profile>) => {
+    await contentService.saveProfile({ ...data, coupleId: id })
+    setProfiles(await contentService.getProfiles(id!))
+    setEditingProfile(null)
+  }
+  const handleDeleteProfile = async (itemId: string) => {
+    if (!window.confirm("Delete this profile?")) return
+    await contentService.deleteProfile(itemId)
+    setProfiles(await contentService.getProfiles(id!))
   }
 
-  const handleDeleteSubItem = async (type: 'PROFILES' | 'MEMORIES' | 'TIMELINE', itemId: string) => {
-    if (!window.confirm("Delete this item?")) return
-    try {
-      if (type === 'PROFILES') {
-        await contentService.deleteProfile(itemId)
-        setProfiles(await contentService.getProfiles(id!))
-      } else if (type === 'MEMORIES') {
-        await contentService.deleteMemory(itemId)
-        setMemories(await contentService.getMemories(id!))
-      } else if (type === 'TIMELINE') {
-        await contentService.deleteTimelineEvent(itemId)
-        setTimelineEvents(await contentService.getTimelineEvents(id!))
-      }
-    } catch (e: any) {
-      alert("Error deleting: " + e.message)
-    }
+  const handleSaveMemory = async (data: Partial<Memory>) => {
+    await contentService.saveMemory({ ...data, coupleId: id })
+    setMemories(await contentService.getMemories(id!))
+    setEditingMemory(null)
+  }
+  const handleDeleteMemory = async (itemId: string) => {
+    if (!window.confirm("Delete this memory?")) return
+    await contentService.deleteMemory(itemId)
+    setMemories(await contentService.getMemories(id!))
+  }
+
+  const handleSaveTimeline = async (data: Partial<TimelineEvent>) => {
+    await contentService.saveTimelineEvent({ ...data, coupleId: id })
+    setTimelineEvents(await contentService.getTimelineEvents(id!))
+    setEditingTimeline(null)
+  }
+  const handleDeleteTimeline = async (itemId: string) => {
+    if (!window.confirm("Delete this event?")) return
+    await contentService.deleteTimelineEvent(itemId)
+    setTimelineEvents(await contentService.getTimelineEvents(id!))
   }
 
   const renderLists = (type: 'PROFILES' | 'MEMORIES' | 'TIMELINE') => {
-    const list = type === 'PROFILES' ? profiles : type === 'MEMORIES' ? memories : timelineEvents
-    return (
-      <div className="space-y-4">
-        <div className="flex justify-between items-center mb-4">
-          <p className="text-gray-400 text-sm">Manage {type.toLowerCase()} for the couple.</p>
-          <button onClick={() => handleAddSubItem(type)} className="bg-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-600">+ Add New</button>
-        </div>
-        <div className="space-y-2">
-          {list.length === 0 ? (
-            <div className="bg-gray-900 border border-gray-700 rounded p-8 text-center text-gray-500">
-              No {type.toLowerCase()} yet.
-            </div>
-          ) : (
-            list.map((item: any) => (
-              <div key={item.id} className="bg-gray-900 border border-gray-700 rounded p-4 flex justify-between items-center">
-                <span className="font-semibold text-white">{item.name || item.title}</span>
-                <button onClick={() => handleDeleteSubItem(type, item.id)} className="text-red-500 text-sm hover:text-red-400">Delete</button>
-              </div>
-            ))
+    if (type === 'PROFILES') {
+      return (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center mb-4">
+            <p className="text-gray-400 text-sm">Manage profiles for the couple.</p>
+            <button onClick={() => setEditingProfile({})} className="bg-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-600">+ Add Profile</button>
+          </div>
+          {editingProfile && (
+            <ProfileForm initialData={editingProfile.id ? editingProfile as Profile : undefined} mediaAssets={mediaAssets} onSave={handleSaveProfile} onCancel={() => setEditingProfile(null)} />
           )}
+          <div className="space-y-2">
+            {profiles.length === 0 ? <p className="text-gray-500">No profiles yet.</p> : profiles.map(p => (
+              <div key={p.id} className="bg-gray-900 border border-gray-700 rounded p-4 flex justify-between items-center">
+                <span className="font-semibold text-white">{p.name}</span>
+                <div className="space-x-3">
+                  <button onClick={() => setEditingProfile(p)} className="text-blue-500 text-sm hover:text-blue-400">Edit</button>
+                  <button onClick={() => handleDeleteProfile(p.id)} className="text-red-500 text-sm hover:text-red-400">Delete</button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
-    )
+      )
+    }
+    if (type === 'MEMORIES') {
+      return (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center mb-4">
+            <p className="text-gray-400 text-sm">Manage memories.</p>
+            <button onClick={() => setEditingMemory({})} className="bg-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-600">+ Add Memory</button>
+          </div>
+          {editingMemory && (
+            <MemoryForm initialData={editingMemory.id ? editingMemory as Memory : undefined} mediaAssets={mediaAssets} onSave={handleSaveMemory} onCancel={() => setEditingMemory(null)} />
+          )}
+          <div className="space-y-2">
+            {memories.length === 0 ? <p className="text-gray-500">No memories yet.</p> : memories.map(m => (
+              <div key={m.id} className="bg-gray-900 border border-gray-700 rounded p-4 flex justify-between items-center">
+                <span className="font-semibold text-white">{m.title}</span>
+                <div className="space-x-3">
+                  <button onClick={() => setEditingMemory(m)} className="text-blue-500 text-sm hover:text-blue-400">Edit</button>
+                  <button onClick={() => handleDeleteMemory(m.id)} className="text-red-500 text-sm hover:text-red-400">Delete</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+    }
+    if (type === 'TIMELINE') {
+      return (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center mb-4">
+            <p className="text-gray-400 text-sm">Manage timeline events.</p>
+            <button onClick={() => setEditingTimeline({})} className="bg-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-600">+ Add Event</button>
+          </div>
+          {editingTimeline && (
+            <TimelineForm initialData={editingTimeline.id ? editingTimeline as TimelineEvent : undefined} mediaAssets={mediaAssets} onSave={handleSaveTimeline} onCancel={() => setEditingTimeline(null)} />
+          )}
+          <div className="space-y-2">
+            {timelineEvents.length === 0 ? <p className="text-gray-500">No events yet.</p> : timelineEvents.map(e => (
+              <div key={e.id} className="bg-gray-900 border border-gray-700 rounded p-4 flex justify-between items-center">
+                <span className="font-semibold text-white">{e.title} <span className="text-gray-500 text-sm">({e.date})</span></span>
+                <div className="space-x-3">
+                  <button onClick={() => setEditingTimeline(e)} className="text-blue-500 text-sm hover:text-blue-400">Edit</button>
+                  <button onClick={() => handleDeleteTimeline(e.id)} className="text-red-500 text-sm hover:text-red-400">Delete</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+    }
+    return null
   }
 
   const renderPublishing = () => {
@@ -342,16 +413,25 @@ export default function CoupleEditor() {
     <div className="flex flex-col h-full overflow-hidden bg-gray-950">
       <header className="px-8 py-6 border-b border-gray-800 flex justify-between items-center bg-gray-900">
         <div>
-          <Link to="/admin/couples" className="text-sm text-gray-400 hover:text-white transition">← Back to Couples</Link>
+          <button onClick={(e) => { if (isDirty && !window.confirm("You have unsaved changes. Are you sure you want to leave?")) { e.preventDefault(); return; } navigate("/admin/couples") }} className="text-sm text-gray-400 hover:text-white transition">? Back to Couples</button>
           <h2 className="text-2xl font-bold mt-2">
             {id === "new" ? "Create Couple Website" : `${formData.person1Name || 'Unknown'} & ${formData.person2Name || 'Unknown'}`}
           </h2>
         </div>
         <div className="flex gap-4">
           {id !== 'new' && (
-            <Link to={`/admin/couples/${id}/media`} className="bg-gray-800 hover:bg-gray-700 px-6 py-2 rounded text-sm font-semibold transition">
+            <button 
+              onClick={(e) => {
+                if (isDirty && !window.confirm("You have unsaved changes. Are you sure you want to leave?")) {
+                  e.preventDefault()
+                  return
+                }
+                navigate(`/admin/couples/${id}/media`)
+              }}
+              className="bg-gray-800 hover:bg-gray-700 px-6 py-2 rounded text-sm font-semibold transition"
+            >
               Media Library
-            </Link>
+            </button>
           )}
           <button onClick={handleSaveDraft} className="bg-red-600 hover:bg-red-700 px-8 py-2 rounded font-bold transition shadow-lg shadow-red-900/20">
             Save Draft

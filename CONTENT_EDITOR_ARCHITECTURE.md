@@ -38,3 +38,8 @@ The V1 cinematic templates (Hero, Home, Timeline, etc.) consume the `CoupleConte
 ## STEP 25 - CONTENT MUTATIONS
 
 All mutators for Profiles, Memories, and Timeline Events have been fully mapped to Supabase upsert and delete operations, completing the async editor migration.
+
+
+## STEP 26 — PRODUCTION ADMIN UX + CONTENT EDITOR HARDENING
+
+Extracted inline prompt() mutators into proper structured React components (ProfileForm, MemoryForm, TimelineForm, MediaPicker). Added dirty state tracking and proper save/publish UI feedback.
