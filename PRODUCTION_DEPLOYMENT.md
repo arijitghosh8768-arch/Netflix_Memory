@@ -114,3 +114,13 @@ Status: VERIFIED / COMPLETE
 
 
 
+## STEP 31 — PRODUCTION CORS HARDENING & FINAL SECURITY SIGN-OFF
+
+Status: COMPLETE
+- Vercel production domain `https://netflix-memory-one.vercel.app` identified and allowed in Edge Function.
+- Local development domain `http://localhost:5173` permitted.
+- Replaced previous development wildcard (`Access-Control-Allow-Origin: *`) with secure dynamic CORS origin checking in `_shared/cors.ts`.
+- Edge Function `public-media-url` updated to use the secure CORS logic.
+- Final credential audit confirmed no secrets exposed in client bundles or git repository (`SUPABASE_SERVICE_ROLE_KEY` is fully isolated server-side).
+- Final E2E testing completed successfully: direct storage access remains blocked, while the authorized signed URL pipeline correctly respects published, tenant isolation, and explicit media assignment boundaries.
+
