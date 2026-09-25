@@ -18,18 +18,22 @@ export default function VideoPlayer({ videoUrl }: VideoPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   
   const [isLoading, setIsLoading] = useState(true)
-  const [isPlaying, setIsPlaying] = useState(true) // Auto-play the cinematic experience
+  const [isPlaying, setIsPlaying] = useState(false) // Start false, play on ready
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
   const [volume, setVolume] = useState(1)
   const [isMuted, setIsMuted] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [showPlayOverlay, setShowPlayOverlay] = useState(false) // If autoplay is blocked
 
   const handleVideoEnded = () => {
     navigate("/credits")
   }
 
-  const togglePlay = () => setIsPlaying(!isPlaying)
+  const togglePlay = () => {
+    setShowPlayOverlay(false)
+    setIsPlaying(!isPlaying)
+  }
   
   const seek = (time: number) => {
     if (playerRef.current) {
@@ -92,18 +96,32 @@ export default function VideoPlayer({ videoUrl }: VideoPlayerProps) {
   return (
     <motion.div
       ref={containerRef}
-      className="relative h-screen w-full overflow-hidden bg-black flex items-center justify-center"
+      className="relative h-screen w-full overflow-hidden bg-black flex items-center justify-center group"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
     >
       {isLoading && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black">
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black">
           <div className="text-center">
             <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
             <p className="mt-4 text-sm text-white/50">
               Preparing your story...
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* Play Overlay if Autoplay fails */}
+      {showPlayOverlay && !isLoading && !isPlaying && (
+        <div 
+          className="absolute inset-0 z-20 flex items-center justify-center bg-black/60 cursor-pointer"
+          onClick={togglePlay}
+        >
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/20 backdrop-blur-md transition hover:bg-white/30 hover:scale-110">
+            <svg className="h-10 w-10 text-white ml-2" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z" />
+            </svg>
           </div>
         </div>
       )}
@@ -118,13 +136,24 @@ export default function VideoPlayer({ videoUrl }: VideoPlayerProps) {
           playing={isPlaying}
           volume={volume}
           muted={isMuted}
-          onReady={() => setIsLoading(false)}
+          onReady={() => {
+            setIsLoading(false)
+            setIsPlaying(true)
+            // If the browser blocks the play command, the onPause event will fire immediately after.
+          }}
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onProgress={(state: any) => setCurrentTime(state.playedSeconds)}
           onDuration={(duration: number) => setDuration(duration)}
           onEnded={handleVideoEnded}
-          onPlay={() => setIsPlaying(true)}
-          onPause={() => setIsPlaying(false)}
+          onPlay={() => {
+            setIsPlaying(true)
+            setShowPlayOverlay(false)
+          }}
+          onPause={() => {
+            setIsPlaying(false)
+            // If it pauses right at the start, autoplay was likely blocked.
+            if (currentTime === 0) setShowPlayOverlay(true)
+          }}
           config={({
             youtube: {
               playerVars: { 
@@ -140,7 +169,7 @@ export default function VideoPlayer({ videoUrl }: VideoPlayerProps) {
         />
       </div>
 
-      {/* Invisible overlay to capture clicks and prevent YouTube UI from interfering */}
+      {/* Invisible overlay to capture clicks */}
       <div className="absolute inset-0 z-10 cursor-pointer" onClick={togglePlay} />
 
       <VideoControls
