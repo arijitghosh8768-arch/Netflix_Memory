@@ -38,9 +38,16 @@ function LoadingScreen({ onComplete }: LoadingScreenProps) {
   const handleInteract = () => {
     setNeedsInteraction(false)
     if (videoRef.current) {
-      videoRef.current.muted = false;
-      videoRef.current.volume = 1.0;
-      videoRef.current.play().catch(() => setVideoFailed(true))
+      // Extremely aggressive reset to guarantee sound on stubborn browsers
+      videoRef.current.pause()
+      videoRef.current.currentTime = 0
+      videoRef.current.muted = false
+      videoRef.current.volume = 1.0
+      
+      const playPromise = videoRef.current.play()
+      if (playPromise !== undefined) {
+        playPromise.catch(() => setVideoFailed(true))
+      }
     }
   }
 
