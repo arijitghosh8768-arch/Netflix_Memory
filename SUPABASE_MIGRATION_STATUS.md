@@ -59,3 +59,16 @@ Status: BLOCKED.
 
 Architecture audit completed. The database schema (`001_initial_schema.sql`) does not contain a `media_assignments` table, which is required to securely enforce whether a specific media asset is actually assigned/used by published content. As instructed, I have stopped before implementing the Edge Function to prevent insecure shortcuts.
 
+## STEP 30D — MEDIA ASSIGNMENT DATABASE FOUNDATION
+
+Status: PARTIALLY VERIFIED / BLOCKED. 
+- Created `004_media_assignments.sql` migration defining the `media_assignments` table.
+- Added foreign keys for `couple_id` and `media_id` with `ON DELETE CASCADE`.
+- Added `usage` CHECK constraint for valid usage types (`HERO`, `GALLERY`, etc.).
+- Created a unique index to prevent duplicate assignments: `(couple_id, media_id, usage, coalesce(reference_id, ''))`.
+- Enabled RLS with Admin-only access, maintaining the V1 authorization model.
+- Integrated frontend service `mediaService.ts` to handle assignments, including an application-level tenant isolation check verifying media ownership before assignment.
+- Build verified and security audit passed with no credential exposure.
+- Cannot apply migration live (`supabase db push`) because we are intentionally not using the exposed database password/scratch scripts.
+- Schema foundation is verified locally and READY for the public media Edge Function logic.
+
