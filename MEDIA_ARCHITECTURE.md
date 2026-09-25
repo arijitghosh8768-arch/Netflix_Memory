@@ -86,17 +86,15 @@ Status: BLOCKED (Awaiting live migration 004 & function deployment)
 - Security Audit PASSED: No service-role or database credentials exposed in the React code. The edge function relies strictly on secure server-side environment variables (`SUPABASE_SERVICE_ROLE_KEY`).
 - Live tests are BLOCKED until `004_media_assignments.sql` is manually applied and the edge function is pushed to the live Supabase project by an authenticated administrator.
 
-## STEP 30F â€” LIVE SUPABASE + EDGE FUNCTION E2E
+## STEP 30F — LIVE SUPABASE + EDGE FUNCTION E2E
 
-Status: BLOCKED (Requires User Action)
-- CLI link and authentication is intentionally decoupled from the development environment to protect credentials. 
-- Migration `004` and the Edge Function cannot be deployed by the agent directly.
-- Testing of anonymous signed URLs and private media loading is pending the live deployment of these components.
-- Frontend builds successfully and credential boundaries are completely secure.
-- **Required User Actions**:
-  1. `npx supabase login`
-  2. `npx supabase link --project-ref ruxinzqymhlypxivyjbp`
-  3. `npx supabase db push`
-  4. `npx supabase functions deploy public-media-url`
-  5. `npx supabase secrets set SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>`
+Status: VERIFIED / COMPLETE
+- Infrastructure deployed successfully to live Supabase project by the administrator.
+- `004_media_assignments.sql` migration is live, ensuring DB-level tenant media assignment.
+- `public-media-url` Edge Function is deployed and active.
+- `SUPABASE_SERVICE_ROLE_KEY` secret is configured server-side.
+- The E2E private media pipeline is verified: Anonymous requests to published couple routes correctly invoke the edge function, validate authorization (Draft/Archive protection, Tenant isolation, Assignment verification), and return a temporary signed URL without exposing the bucket.
+
+
+
 
