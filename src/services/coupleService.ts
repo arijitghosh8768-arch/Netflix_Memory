@@ -89,3 +89,72 @@ export const coupleService = {
     return couples[index]
   },
 }
+
+const PROFILES_KEY = 'our-story-profiles'
+const MEMORIES_KEY = 'our-story-memories'
+const TIMELINE_KEY = 'our-story-timeline'
+
+export const contentService = {
+  // Profiles
+  getProfiles: (coupleId: string): any[] => {
+    try { const data = JSON.parse(localStorage.getItem(PROFILES_KEY) || '[]'); return data.filter((d:any) => d.coupleId === coupleId).sort((a:any, b:any) => a.sortOrder - b.sortOrder); } catch { return []; }
+  },
+  saveProfile: (profile: any) => {
+    authService.requireAdmin();
+    try {
+      const data = JSON.parse(localStorage.getItem(PROFILES_KEY) || '[]');
+      const filtered = data.filter((d:any) => d.id !== profile.id);
+      filtered.push(profile);
+      localStorage.setItem(PROFILES_KEY, JSON.stringify(filtered));
+    } catch {}
+  },
+  deleteProfile: (id: string) => {
+    authService.requireAdmin();
+    try {
+      const data = JSON.parse(localStorage.getItem(PROFILES_KEY) || '[]');
+      localStorage.setItem(PROFILES_KEY, JSON.stringify(data.filter((d:any) => d.id !== id)));
+    } catch {}
+  },
+
+  // Memories
+  getMemories: (coupleId: string): any[] => {
+    try { const data = JSON.parse(localStorage.getItem(MEMORIES_KEY) || '[]'); return data.filter((d:any) => d.coupleId === coupleId).sort((a:any, b:any) => a.sortOrder - b.sortOrder); } catch { return []; }
+  },
+  saveMemory: (memory: any) => {
+    authService.requireAdmin();
+    try {
+      const data = JSON.parse(localStorage.getItem(MEMORIES_KEY) || '[]');
+      const filtered = data.filter((d:any) => d.id !== memory.id);
+      filtered.push(memory);
+      localStorage.setItem(MEMORIES_KEY, JSON.stringify(filtered));
+    } catch {}
+  },
+  deleteMemory: (id: string) => {
+    authService.requireAdmin();
+    try {
+      const data = JSON.parse(localStorage.getItem(MEMORIES_KEY) || '[]');
+      localStorage.setItem(MEMORIES_KEY, JSON.stringify(data.filter((d:any) => d.id !== id)));
+    } catch {}
+  },
+
+  // Timeline
+  getTimelineEvents: (coupleId: string): any[] => {
+    try { const data = JSON.parse(localStorage.getItem(TIMELINE_KEY) || '[]'); return data.filter((d:any) => d.coupleId === coupleId).sort((a:any, b:any) => a.sortOrder - b.sortOrder); } catch { return []; }
+  },
+  saveTimelineEvent: (event: any) => {
+    authService.requireAdmin();
+    try {
+      const data = JSON.parse(localStorage.getItem(TIMELINE_KEY) || '[]');
+      const filtered = data.filter((d:any) => d.id !== event.id);
+      filtered.push(event);
+      localStorage.setItem(TIMELINE_KEY, JSON.stringify(filtered));
+    } catch {}
+  },
+  deleteTimelineEvent: (id: string) => {
+    authService.requireAdmin();
+    try {
+      const data = JSON.parse(localStorage.getItem(TIMELINE_KEY) || '[]');
+      localStorage.setItem(TIMELINE_KEY, JSON.stringify(data.filter((d:any) => d.id !== id)));
+    } catch {}
+  }
+}

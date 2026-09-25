@@ -18,9 +18,48 @@ export interface Couple {
   heroMediaId?: string
   profileMediaId?: string
 
+  counterEnabled?: boolean
+  counterStartDate?: string
+  endingTitle?: string
+  endingQuote?: string
+  backgroundAudioMediaId?: string
+  endingAudioMediaId?: string
+
   createdAt: string
   updatedAt: string
   publishedAt?: string
+}
+
+export interface Profile {
+  id: string
+  coupleId: string
+  name: string
+  mediaId?: string
+  theme?: string
+  sortOrder: number
+}
+
+export interface Memory {
+  id: string
+  coupleId: string
+  title: string
+  category: string
+  description: string
+  coverMediaId?: string
+  videoMediaId?: string
+  duration?: string
+  featured?: boolean
+  sortOrder: number
+}
+
+export interface TimelineEvent {
+  id: string
+  coupleId: string
+  date: string
+  title: string
+  description: string
+  mediaId?: string
+  sortOrder: number
 }
 
 export type MediaType = "IMAGE" | "VIDEO" | "AUDIO"

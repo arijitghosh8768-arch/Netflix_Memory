@@ -3,6 +3,7 @@ import { useParams, Outlet, Link } from "react-router"
 import { coupleService } from "../services/coupleService"
 import type { Couple } from "../types/models"
 import { CoupleContext } from "../context/CoupleContext"
+import { authService } from "../services/authService"
 
 export default function CoupleWebsite() {
   const { slug } = useParams<{ slug: string }>()
@@ -31,7 +32,9 @@ export default function CoupleWebsite() {
     )
   }
 
-  if (couple.status === 'ARCHIVED') {
+  const isAdmin = authService.getCurrentAdmin()
+
+  if (couple.status === 'ARCHIVED' && !isAdmin) {
     return (
       <div className="h-screen bg-black flex flex-col items-center justify-center text-white text-center p-6">
         <h1 className="text-4xl font-bold mb-4">Archived</h1>
@@ -40,7 +43,7 @@ export default function CoupleWebsite() {
     )
   }
 
-  if (couple.status === 'DRAFT') {
+  if (couple.status === 'DRAFT' && !isAdmin) {
     return (
       <div className="h-screen bg-black flex flex-col items-center justify-center text-white text-center p-6">
         <h1 className="text-4xl font-bold mb-4">Coming Soon</h1>
@@ -49,9 +52,13 @@ export default function CoupleWebsite() {
     )
   }
 
-  // If Published, wrap child routes in context
   return (
     <CoupleContext.Provider value={couple}>
+      {isAdmin && couple.status !== 'PUBLISHED' && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-red-600 text-white text-center text-xs font-bold py-1 uppercase tracking-widest shadow-md">
+          Admin Preview Mode ({couple.status})
+        </div>
+      )}
       <Outlet />
     </CoupleContext.Provider>
   )
