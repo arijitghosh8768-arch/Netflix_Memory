@@ -1,39 +1,66 @@
-/**
- * Private Media Storage Foundation
- * 
- * Selected Architecture: Supabase Storage
- */
+import { supabase, isSupabaseConfigured } from '../lib/supabase'
 
 export const storageService = {
-  /**
-   * Uploads a binary file to private object storage with strict tenant isolation.
-   * Future Key Design: couples/{coupleId}/{usageType}/{uuid}
-   */
   uploadMedia: async (coupleId: string, usageType: string, file: File): Promise<string> => {
-    // Production will call: supabase.storage.from('private-media').upload(...)
-    console.log(`[Storage Foundation] Uploading ${file.name} for ${coupleId} (${usageType})`)
-    throw new Error('Production upload not implemented.')
+    if (!isSupabaseConfigured) {
+      console.warn('[Storage Foundation] Supabase not configured. Using development fake path.')
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      return `/images/demo-${Date.now()}-${file.name}`
+    }
+
+    const uuid = crypto.randomUUID()
+    const ext = file.name.split('.').pop()
+    const storageKey = `couples/${coupleId}/${usageType}/${uuid}.${ext}`
+
+    const { data, error } = await supabase!.storage
+      .from('our-story-media')
+      .upload(storageKey, file, {
+        cacheControl: '3600',
+        upsert: false
+      })
+
+    if (error) {
+      throw new Error(`Failed to upload media: ${error.message}`)
+    }
+
+    return data.path
   },
 
-  /**
-   * Generates a short-lived signed URL for a specific asset.
-   * Enforces backend authorization checking before generation.
-   */
   createSignedUrl: async (storageKey: string, coupleId: string): Promise<string> => {
-    // Production will verify couple ownership via DB/RLS, then:
-    // supabase.storage.from('private-media').createSignedUrl(storageKey, 3600)
-    
-    console.log(`[Storage Foundation] Generating signed URL for ${storageKey} (Tenant: ${coupleId})`)
-    // For V1 development compatibility, we simply return the mock static key.
-    // In production, this returns the temporary secure URL.
-    return storageKey
+    if (!isSupabaseConfigured || storageKey.startsWith('/images/') || storageKey.startsWith('/videos/') || storageKey.startsWith('/audio/')) {
+      // Fallback for development static files
+      return storageKey
+    }
+
+    // In a fully secure setup, we would verify coupleId authorization via a backend edge function here,
+    // or rely on Supabase Storage RLS policies where the authenticated user (Admin) is granted SELECT.
+    console.log(`[Storage] Generating signed URL for tenant: ${coupleId}`)
+
+    const { data, error } = await supabase!.storage
+      .from('our-story-media')
+      .createSignedUrl(storageKey, 3600) // 1 hour expiry
+
+    if (error || !data) {
+      console.error('[Storage Error] Could not generate signed URL', error)
+      return storageKey // Fallback to raw string, which will break safely (403)
+    }
+
+    return data.signedUrl
   },
 
-  /**
-   * Safely deletes media from object storage.
-   */
   deleteMedia: async (storageKey: string): Promise<void> => {
-    // Production: supabase.storage.from('private-media').remove([storageKey])
-    console.log(`[Storage Foundation] Deleted ${storageKey}`)
+    if (!isSupabaseConfigured || storageKey.startsWith('/')) {
+      console.warn(`[Storage Foundation] Deleted mock file ${storageKey}`)
+      return
+    }
+
+    const { error } = await supabase!.storage
+      .from('our-story-media')
+      .remove([storageKey])
+      
+    if (error) {
+      throw new Error(`Failed to delete media: ${error.message}`)
+    }
   }
 }

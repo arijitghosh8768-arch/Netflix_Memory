@@ -50,7 +50,7 @@ export const mediaService = {
       coupleId,
       type: data.type || "IMAGE",
       name: data.name || "Untitled",
-      storageKey: data.storageKey || `/images/demo-${Date.now()}.jpg`, // Development fake path
+      storageKey: data.storageKey || `/images/demo-${Date.now()}.jpg`, 
       mimeType: data.mimeType || "image/jpeg",
       size: data.size || 1024,
       createdAt: new Date().toISOString(),

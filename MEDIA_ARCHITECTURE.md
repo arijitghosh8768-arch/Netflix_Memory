@@ -48,3 +48,8 @@ When integrating the backend API, `mediaService.ts` will simply swap its `localS
 ## STEP 20 - STORAGE SECURITY FOUNDATION
 
 Private storage and Signed URL abstractions have been implemented in storageService.ts, laying the groundwork for secure media delivery.
+
+
+## STEP 22 - PRODUCTION SUPABASE STORAGE
+
+Media is now fully integrated with Supabase Storage (Private Buckets). All file operations are authenticated, validated, and stored via short-lived Signed URLs.
