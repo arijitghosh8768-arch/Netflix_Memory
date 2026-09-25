@@ -97,3 +97,9 @@ Status: PARTIALLY VERIFIED / BLOCKED.
 - Automated testing was blocked by Auth rate limits.
 - Critical architectural gap identified: The frontend Vite SPA cannot securely generate signed URLs for anonymous public visitors without exposing private bucket credentials. An Edge Function or alternative backend delivery mechanism is required.
 
+## STEP 30C — SECURE PUBLIC SIGNED-MEDIA DELIVERY
+
+Status: BLOCKED. 
+
+Architecture audit completed. The database schema (`001_initial_schema.sql`) does not contain a `media_assignments` table, which is required to securely enforce whether a specific media asset is actually assigned/used by published content. As instructed, I have stopped before implementing the Edge Function to prevent insecure shortcuts.
+

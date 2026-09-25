@@ -58,3 +58,9 @@ Media is now fully integrated with Supabase Storage (Private Buckets). All file 
 ## STEP 23 - PRODUCTION SECURITY
 
 Storage policies are configured for strictly private buckets. Unauthenticated requests are denied. Signed URLs are enforced.
+## STEP 30C — SECURE PUBLIC SIGNED-MEDIA DELIVERY
+
+Status: BLOCKED. 
+
+Architecture audit completed. The database schema (`001_initial_schema.sql`) does not contain a `media_assignments` table, which is required to securely enforce whether a specific media asset is actually assigned/used by published content. As instructed, I have stopped before implementing the Edge Function to prevent insecure shortcuts.
+
